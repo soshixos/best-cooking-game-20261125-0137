@@ -76,6 +76,22 @@ export function createRenderer(canvas) {
     ctx.stroke();
   }
 
+  // Same as text(), but shrinks the font until the string fits maxWidth —
+  // long toasts (e.g. "+41 koin! Nasi Ayam Saus tersaji.") must never spill
+  // past the panel they sit in.
+  function fitText(value, x, y, size, maxWidth, color, align = 'center', bold = false) {
+    let s = size;
+    ctx.font = `${bold ? 'bold ' : ''}${s}px ${FONT}`;
+    while (s > 11 && ctx.measureText(value).width > maxWidth) {
+      s -= 1;
+      ctx.font = `${bold ? 'bold ' : ''}${s}px ${FONT}`;
+    }
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(value, x, y);
+  }
+
   function ingredientDisc(cx, cy, r, ing, cooked = true, burnt = false) {
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -188,19 +204,10 @@ export function createRenderer(canvas) {
     outline(p.x, p.y, p.w, p.h, ready ? PALETTE.green : '#c9a86a', ready ? 4 : 2, 14);
     text('🍽  PIRING', p.x + 20, p.y + 34, 20, PALETTE.text, 'left', true);
     text(`${state.plate.length}/${3} bahan`, p.x + p.w - 20, p.y + 34, 18, PALETTE.muted, 'right');
-    // Plate circle.
-    ctx.beginPath();
-    ctx.arc(p.x + p.w / 2, p.y + 150, 78, 0, Math.PI * 2);
-    ctx.fillStyle = PALETTE.plate;
-    ctx.fill();
-    ctx.strokeStyle = '#c9a86a';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(p.x + p.w / 2, p.y + 150, 56, 0, Math.PI * 2);
-    ctx.strokeStyle = '#e0cba8';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    // Wide platter tray the three plate slots sit on (a circle left the outer
+    // discs straddling its rim).
+    rect(p.x + 16, p.y + 92, p.w - 32, 112, PALETTE.plate, 52);
+    outline(p.x + 16, p.y + 92, p.w - 32, 112, '#e0cba8', 2, 52);
     for (let i = 0; i < 3; i += 1) {
       const r = plateSlotRect(i);
       const item = state.plate[i];
@@ -247,7 +254,7 @@ export function createRenderer(canvas) {
     rect(bx, by, bw, bh, ready ? PALETTE.serveReady : '#9e9e9e', 12);
     text(ready ? '🔔  SAJIKAN SEKARANG  (Spasi)' : 'SAJIKAN  (Spasi)', bx + bw / 2, by + 40, 24, '#ffffff', 'center', true);
     if (state.toast) {
-      text(state.toast.text, s.x + s.w / 2, s.y + 246, 17, PALETTE.text, 'center', true);
+      fitText(state.toast.text, s.x + s.w / 2, s.y + 246, 17, s.w - 32, PALETTE.text);
     }
   }
 
@@ -278,9 +285,9 @@ export function createRenderer(canvas) {
     drawTrash(state);
   }
 
-  function drawPanel(title, lines, prompt) {
+  function drawPanel(title, lines, prompt, withButton = false) {
     const width = 640;
-    const height = 150 + lines.length * 34 + 70;
+    const height = 150 + lines.length * 34 + 70 + (withButton ? 84 : 0);
     const x = (FIELD.width - width) / 2;
     const y = (FIELD.height - height) / 2;
     rect(0, 0, FIELD.width, FIELD.height, '#00000088');
@@ -288,7 +295,8 @@ export function createRenderer(canvas) {
     outline(x, y, width, height, PALETTE.gold, 3, 16);
     text(title, FIELD.width / 2, y + 72, 46, PALETTE.text, 'center', true);
     lines.forEach((line, i) => text(line, FIELD.width / 2, y + 128 + i * 34, 21, PALETTE.muted, 'center'));
-    text(prompt, FIELD.width / 2, y + height - 34, 22, PALETTE.green, 'center', true);
+    text(prompt, FIELD.width / 2, y + height - (withButton ? 118 : 34), 22, PALETTE.green, 'center', true);
+    return { x, y, width, height };
   }
 
   function draw(state, screen, best) {
@@ -298,16 +306,17 @@ export function createRenderer(canvas) {
     ctx.setTransform(view.scale, 0, 0, view.scale, view.x, view.y);
     drawKitchen(state);
     if (screen === SCREEN_TITLE) {
-      drawPanel('🍳  DAPUR SOSHIXOS', [
+      const panel = drawPanel('🍳  DAPUR SOSHIXOS', [
         'Masak pesanan, sajikan tepat waktu, kejar kombo!',
         'Klik bahan (atau 1-6) • Ayam & Telur dimasak di kompor',
         'Klik kompor saat DONE • Sajikan di jendela (Spasi)',
         `Skor terbaik: ${best} koin`,
-      ], 'Klik atau tekan Enter untuk mulai');
-      // Start button hint drawn on the panel area.
+      ], 'Klik atau tekan Enter untuk mulai', true);
+      // Start button sits inside the panel, above its bottom edge
+      // (LAYOUT.startButton is kept in sync for hit-testing).
       const b = LAYOUT.startButton;
-      rect(b.x, b.y, b.w, b.h, PALETTE.serveReady, 12);
-      text('▶  MULAI SHIFT', FIELD.width / 2, b.y + 42, 26, '#ffffff', 'center', true);
+      rect(b.x, panel.y + panel.height - 76, b.w, b.h, PALETTE.serveReady, 12);
+      text('▶  MULAI SHIFT', FIELD.width / 2, panel.y + panel.height - 34, 26, '#ffffff', 'center', true);
       return;
     }
     if (screen === SCREEN_PAUSED) {

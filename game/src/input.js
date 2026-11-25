@@ -9,7 +9,8 @@ export const ACTION_SERVE = 4;
 export const ACTION_RESTART = 8;
 export const ACTION_CLEAR = 16;
 
-const CONFIRM = new Set(['Space', 'Enter']);
+const CONFIRM = new Set(['Enter']);
+const SERVE_KEY = new Set(['Space']);
 const PAUSE = new Set(['KeyP', 'Escape']);
 const RESTART = new Set(['KeyR']);
 const CLEAR = new Set(['Backspace', 'Delete']);
@@ -47,7 +48,9 @@ export function createInput(canvas, onZone) {
   }
 
   window.addEventListener('keydown', (event) => {
-    if (CONFIRM.has(event.code)) {
+    if (SERVE_KEY.has(event.code)) {
+      if (!event.repeat) actions |= ACTION_SERVE;
+    } else if (CONFIRM.has(event.code)) {
       if (!event.repeat) actions |= ACTION_CONFIRM;
     } else if (PAUSE.has(event.code)) {
       if (!event.repeat) actions |= ACTION_PAUSE;

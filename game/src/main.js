@@ -99,7 +99,7 @@ function runGame() {
       if (events & EVENT_SERVE) announce(`Served! ${world.state.coins} coins.`);
       else if (events & EVENT_WRONG) announce('Wrong recipe. Minus 8 coins.');
     }
-    if (actions & ACTION_CONFIRM && (screen === SCREEN_TITLE || screen === SCREEN_OVER)) startGame();
+    if (actions & (ACTION_CONFIRM | ACTION_SERVE) && (screen === SCREEN_TITLE || screen === SCREEN_OVER)) startGame();
     else if (actions & ACTION_RESTART && screen === SCREEN_OVER) startGame();
     else if (actions & ACTION_PAUSE && screen === SCREEN_PLAY) {
       screen = SCREEN_PAUSED;

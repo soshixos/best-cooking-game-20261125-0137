@@ -180,7 +180,7 @@ export function createWorld(random) {
     state.tickets = state.tickets.filter((t) => t.id !== ticket.id);
     state.plate = [];
     state.servedDish = { recipeId: recipe.id, timer: 6 };
-    say(`+${earned} koin! ${recipe.name} disajikan.`);
+    say(`+${earned} koin! ${recipe.name} tersaji.`);
     return EVENT_SERVE;
   }
 
@@ -207,7 +207,7 @@ export function createWorld(random) {
           item.progress = 1;
           item.done = true;
           events |= EVENT_COOK_DONE;
-          say(`${ingredientById(item.id).name} matang! Ambil sebelum gosong.`);
+          say(`${ingredientById(item.id).name} matang! Ambil cepat!`);
         }
       } else if (!item.burnt) {
         item.burnLeft -= dt;
@@ -225,7 +225,7 @@ export function createWorld(random) {
         state.tickets.splice(i, 1);
         state.combo = 0;
         events |= EVENT_EXPIRE;
-        say('Pesanan kedaluwarsa! Pelanggan pergi.');
+        say('Pesanan kedaluwarsa!');
       }
     }
     // New tickets arrive faster as the shift goes on.

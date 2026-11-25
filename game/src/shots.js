@@ -81,8 +81,17 @@ export function stageShot(name, world) {
   }
 
   // PLAY: one dish served (visible on the serving counter), then a second
-  // dish mid-assembly — 2 of 3 ingredients on the plate.
+  // dish mid-assembly — 2 of 3 ingredients on the plate. The board is kept
+  // busy (a second ticket is forced in) so the shot shows tickets + timers,
+  // and the served dish is held on the counter for the frame.
   serveFirstTicket(world);
+  world.state.spawnTimer = 0;
+  stepFor(world, 0.2);
   buildMidAssembly(world);
+  if (world.state.tickets.length < 2) {
+    world.state.spawnTimer = 0;
+    stepFor(world, 0.2);
+  }
+  if (world.state.servedDish) world.state.servedDish.timer = 6;
   return { screen: SCREEN_PLAY, best: world.state.coins };
 }

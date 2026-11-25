@@ -42,13 +42,13 @@ export const LAYOUT = {
   topBar: { x: 0, y: 0, w: 1280, h: 52 },
   board: { x: 16, y: 60, w: 1248, h: 108 },
   ticket: { w: 396, h: 92, gap: 28 },
-  bins: { x: 16, y: 192, w: 196, h: 112, gap: 16 },
+  bins: { x: 16, y: 196, w: 196, h: 120, gap: 16 },
   stove: { x: 16, y: 330, w: 400, h: 250 },
   burner: { w: 168, h: 150, gap: 32 },
   plate: { x: 470, y: 330, w: 340, h: 250 },
   serve: { x: 864, y: 330, w: 400, h: 250 },
   trash: { x: 470, y: 596, w: 340, h: 52 },
-  startButton: { x: 490, y: 520, w: 300, h: 64 },
+  startButton: { x: 490, y: 504, w: 300, h: 64 },
 };
 
 export function binRect(index) {
